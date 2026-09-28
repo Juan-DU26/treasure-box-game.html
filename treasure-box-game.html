@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AR 数字学习游戏：海盗开箱寻宝</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Comic Sans', 'ZCOOL KuaiLe', cursive, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            overflow: hidden;
+            background-color: #0b132b;
+        }
+
+        .font-cartoon {
+            font-family: 'ZCOOL KuaiLe', 'Fredoka One', cursive, sans-serif;
+        }
+
+        /* Top Slot Clean Number Style */
+        .top-slot-number {
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+            font-weight: 900;
+            color: #0f172a;
+            -webkit-text-stroke: 0px transparent !important;
+            text-shadow: none !important;
+        }
+
+        /* Extra Large Comic Sans Stroke Style for Giant Popup Number */
+        .giant-comic-stroke {
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+            font-weight: 900;
+            -webkit-text-stroke: 7px #0f172a;
+            text-shadow: 0 12px 0 #020617, 0 20px 50px rgba(0, 0, 0, 0.95);
+        }
+
+        /* Empty Target Golden Slots */
+        .empty-slot {
+            background: rgba(15, 23, 42, 0.75);
+            border: 2px dashed rgba(245, 158, 11, 0.6);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Filled Golden Slot */
+        .filled-slot {
+            background: linear-gradient(180deg, #fef08a 0%, #f59e0b 100%);
+            border: 2px solid #ffffff;
+            color: #0f172a;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+            font-weight: 900;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6), inset 0 2px 4px #ffffff;
+        }
+
+        /* Fullscreen Dynamic 16-Ray Sunburst Rotating Glow Aura */
+        @keyframes sunburstRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .sunburst-aura-fullscreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: min(92vw, 92vh, 1150px);
+            height: min(92vw, 92vh, 1150px);
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle, rgba(254, 240, 138, 0.92) 0%, rgba(245, 158, 11, 0.45) 45%, transparent 70%),
+                repeating-conic-gradient(
+                    from 0deg,
+                    rgba(250, 204, 21, 0.85) 0deg 11.25deg,
+                    transparent 11.25deg 22.5deg
+                );
+            animation: sunburstRotate 9s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+            box-shadow: 0 0 90px rgba(250, 204, 21, 0.8);
+        }
+
+        /* Giant Gem Spring Pop Animation */
+        @keyframes giantGemPop {
+            0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+            65% { transform: scale(1.35) rotate(12deg); opacity: 1; filter: brightness(1.4); }
+            85% { transform: scale(0.9) rotate(-4deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+        }
+
+        .gem-spring-in {
+            animation: giantGemPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Gem Interactive Re-bounce Tap Animation */
+        @keyframes gemTapBounce {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.45) rotate(8deg); filter: brightness(1.5); }
+            70% { transform: scale(0.92); }
+            100% { transform: scale(1); }
+        }
+
+        .gem-tap-active {
+            animation: gemTapBounce 0.38s ease-out forwards;
+        }
+
+        /* Super Giant Comic Sans Number Initial Burst */
+        @keyframes giantNumberBurst {
+            0% { transform: scale(0.05) rotate(-25deg); opacity: 0; filter: brightness(3); }
+            60% { transform: scale(1.4) rotate(5deg); opacity: 1; filter: brightness(1.3); }
+            80% { transform: scale(0.92) rotate(-2deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+        }
+
+        .number-burst-anim {
+            animation: giantNumberBurst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* 3-Time Bright Flash & Scale Pulse Animation for Reinforcement */
+        @keyframes pulseFlashGlow {
+            0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 15px #facc15); }
+            50% { transform: scale(1.42) rotate(4deg); filter: brightness(2) drop-shadow(0 0 65px #fef08a); }
+            100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 15px #facc15); }
+        }
+
+        .pulse-flash-active {
+            animation: pulseFlashGlow 0.48s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* 数字朗读时的摇一摇 (Shake / Wobble) 效果 */
+        @keyframes numberShake {
+            0% { transform: scale(1.3) rotate(0deg); }
+            20% { transform: scale(1.4) rotate(-18deg); }
+            40% { transform: scale(1.4) rotate(18deg); }
+            60% { transform: scale(1.4) rotate(-12deg); }
+            80% { transform: scale(1.4) rotate(12deg); }
+            100% { transform: scale(1.2) rotate(0deg); }
+        }
+
+        .shake-active {
+            animation: numberShake 0.65s ease-in-out forwards;
+            background: linear-gradient(180deg, #fef08a 0%, #f59e0b 100%) !important;
+            color: #0f172a !important;
+            box-shadow: 0 0 35px #facc15, 0 10px 25px rgba(0,0,0,0.6) !important;
+            border-color: #ffffff !important;
+            z-index: 30;
+        }
+
+        /* Slow Smooth Fade-Out Transitions for Fullscreen Modal */
+        .modal-fade-out {
+            opacity: 0 !important;
+            transition: opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .modal-fade-in {
+            opacity: 1 !important;
+            transition: opacity 0.35s ease-out;
+        }
+
+        .custom-key-cursor {
+            cursor: none;
+        }
+
+        @keyframes slotGlow {
+            0%, 100% { box-shadow: 0 0 8px rgba(250, 204, 21, 0.4); border-color: #facc15; }
+            50% { box-shadow: 0 0 24px rgba(250, 204, 21, 0.95); border-color: #fef08a; }
+        }
+
+        .slot-highlight {
+            animation: slotGlow 1.2s infinite;
+        }
+
+        /* Pirate Chest Vector Styling */
+        .chest-card {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            position: relative;
+            overflow: visible;
+        }
+
+        .chest-svg-lid {
+            transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: 110px 70px;
+        }
+
+        .chest-open .chest-svg-lid {
+            transform: rotateX(-105deg) translateY(-22px) scale(0.92);
+        }
+
+        .chest-open {
+            opacity: 0.55;
+            filter: grayscale(0.2);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen relative select-none custom-key-cursor bg-slate-950 text-white overflow-hidden">
+
+    <!-- AR Video Live Background Feed -->
+    <video id="arVideo" class="absolute inset-0 w-full h-full object-cover z-0 hidden" autoplay playsinline muted></video>
+
+    <!-- Background Canvas for Stardust & Fireworks -->
+    <canvas id="bgCanvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- Magic Golden Key Pointer -->
+    <div id="magicKey" class="fixed top-0 left-0 w-12 h-12 pointer-events-none z-50 transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 text-3xl filter drop-shadow-[0_0_14px_rgba(250,204,21,0.95)]">
+        🔑
+    </div>
+
+    <!-- Top Navigation Header & 12 Target Slots Bar -->
+    <div class="relative z-20 flex flex-col items-center pt-2 px-2 sm:px-6 max-w-6xl mx-auto">
+        <!-- Control Navbar -->
+        <div class="w-full flex justify-between items-center mb-2 bg-slate-900/85 backdrop-blur-md p-2.5 rounded-2xl border-2 border-amber-500/60 shadow-xl">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl sm:text-3xl">🏴‍☠️</span>
+                <h1 class="text-lg sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 font-cartoon drop-shadow">
+                    海盗开箱寻宝
+                </h1>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <!-- AR Toggle Button -->
+                <button id="btnToggleAR" class="flex items-center space-x-1 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition transform active:scale-95 border border-amber-300">
+                    <span id="arStatusIcon">📷</span>
+                    <span id="arStatusText">开启 AR 镜头</span>
+                </button>
+                <!-- Sound Toggle Button -->
+                <button id="btnToggleSound" class="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition transform active:scale-95 border border-indigo-300">
+                    <span id="soundIcon">🔊</span>
+                    <span>音乐</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Top 12 Empty Target Slots Bar -->
+        <div id="slotBar" class="w-full grid grid-cols-6 sm:grid-cols-12 gap-1.5 sm:gap-2 bg-slate-950/85 p-2 sm:p-2.5 rounded-2xl border-2 border-amber-500/50 backdrop-blur-md shadow-2xl">
+            <!-- 12 Empty Slots rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- Main 12 Chest Grid Area -->
+    <main class="relative z-10 max-w-5xl mx-auto px-3 py-2 h-[calc(100vh-140px)] flex items-center justify-center">
+        <div id="chestGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 sm:gap-4 w-full max-h-full">
+            <!-- 12 Cartoon Pirate Chests Rendered Dynamically -->
+        </div>
+    </main>
+
+    <!-- FULLSCREEN Gem Counting Stage & Giant Number Modal -->
+    <div id="countModal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-8 hidden overflow-hidden modal-fade-in">
+        
+        <!-- Fullscreen Rotating 16-Ray Sunburst Background Aura -->
+        <div id="modalSunburst" class="sunburst-aura-fullscreen hidden"></div>
+
+        <!-- Modal Header Title -->
+        <div class="relative z-20 text-center pt-2">
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-amber-300 font-cartoon drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] tracking-wider">
+                ✨ 全屏点宝藏 · 互动数宝石 ✨
+            </h2>
+            <p class="text-xs sm:text-base text-yellow-200/80 font-cartoon mt-1">
+                点击屏幕上的宝石可重复点数哦！
+            </p>
+        </div>
+
+        <!-- Dynamic Fullscreen Gems Container Stage -->
+        <div id="gemStage" class="relative z-20 w-full flex-1 flex items-center justify-center p-2 sm:p-6 overflow-visible">
+            <div id="gemContainer" class="w-full h-full flex flex-wrap items-center justify-center gap-4 sm:gap-8 max-w-6xl mx-auto">
+                <!-- Dynamically sized giant diamonds pop here -->
+            </div>
+        </div>
+
+        <!-- Bottom Giant Comic Sans Number & Speech Label Section -->
+        <div class="relative z-20 w-full flex flex-col items-center justify-center pb-2 sm:pb-6">
+            <!-- Super Giant Burst Number Box -->
+            <div id="giantNumberBox" class="h-32 sm:h-44 md:h-52 flex items-center justify-center my-1">
+                <!-- Giant Comic Sans Bold Number pops here -->
+            </div>
+
+            <!-- Speech Vocal Label -->
+            <div id="modalSpeechLabel" class="text-xl sm:text-3xl md:text-4xl font-black text-yellow-300 font-cartoon min-h-[44px] drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] text-center px-4">
+                <!-- Speech text display -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FINALE FULLSCREEN MODAL (蓝色背景：数字 0 到 10 摇动朗读界面) -->
+    <div id="finaleModal" class="fixed inset-0 z-50 bg-gradient-to-b from-blue-600 via-blue-700 to-indigo-950 flex flex-col items-center justify-center p-4 sm:p-8 hidden modal-fade-in">
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-yellow-300 font-cartoon drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] mb-8 sm:mb-12 text-center tracking-wider">
+            ✨ 数字 0 至 10 大集合 ✨
+        </h2>
+        
+        <!-- Numbers 0-10 container -->
+        <div id="finaleNumbersContainer" class="flex flex-wrap items-center justify-center gap-3 sm:gap-5 max-w-5xl mx-auto p-4">
+            <!-- Dynamically rendered 0-10 cards -->
+        </div>
+    </div>
+
+    <!-- Victory Celebration Overlay -->
+    <div id="victoryOverlay" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-lg flex flex-col items-center justify-center hidden p-6">
+        <div class="text-center space-y-5 max-w-md bg-slate-900/90 border-4 border-yellow-400 p-8 rounded-3xl shadow-2xl animate-bounce">
+            <div class="text-6xl sm:text-7xl">🏆👑🏴‍☠️</div>
+            <h2 class="text-3xl sm:text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 font-cartoon">
+                太棒啦！通关啦！
+            </h2>
+            <p class="text-amber-200 text-base sm:text-lg font-cartoon">
+                所有的数字都已按照 0 到 10 的正确顺序认读完毕！
+            </p>
+            <button id="btnRestart" class="w-full py-3.5 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xl sm:text-2xl rounded-2xl shadow-xl transition transform active:scale-95 border-2 border-yellow-200 font-cartoon">
+                🔄 重新开启寻宝
+            </button>
+        </div>
+    </div>
+
+    <!-- Start Game Overlay Mask -->
+    <div id="startOverlay" class="fixed inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center cursor-pointer">
+        <div class="space-y-6 max-w-lg bg-slate-900/90 border-4 border-amber-500 p-7 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-md">
+            <div class="text-7xl sm:text-8xl animate-bounce">🔑🏴‍☠️</div>
+            <h1 class="text-3xl sm:text-5xl font-extrabold text-amber-400 font-cartoon drop-shadow-md">
+                AR 数字学习游戏
+            </h1>
+            <p class="text-xl sm:text-2xl text-yellow-200 font-cartoon">
+                《海盗开箱寻宝》
+            </p>
+            <div class="bg-amber-950/60 p-4 rounded-2xl border border-amber-500/40 text-amber-200 text-sm sm:text-base text-left space-y-2 font-cartoon">
+                <p>✨ <b>点击屏幕</b> 开启金钥匙魔法寻宝之旅！</p>
+                <p>💎 <b>全屏震撼数宝石</b>：超大宝石，全班互动点数！</p>
+                <p>⚡ <b>数字闪耀 3 次加深印象</b> + 1.3s 慢速淡出！</p>
+                <p>🌊 <b>通关蓝色背景</b>：从 0 到 10 由小到大排列，边摇边读！</p>
+            </div>
+            <div class="py-3.5 px-8 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 font-black text-2xl rounded-2xl shadow-xl animate-pulse font-cartoon">
+                点击开启宝藏之旅 🚀
+            </div>
+        </div>
+    </div>
+
+    <!-- Parabolic Flying Item Container -->
+    <div id="flyContainer" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <script>
+        // Game Configuration
+        const CHEST_VALUES = [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let chestsState = [];
+        let slotsState = Array(12).fill(null);
+        let openedCount = 0;
+        let isModalActive = false;
+        let audioCtx = null;
+        let isSoundOn = true;
+        let isAROn = false;
+        let arStream = null;
+
+        // Particle Trail Systems
+        const stardustParticles = [];
+        const fireworkParticles = [];
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+
+        // DOM References
+        const startOverlay = document.getElementById('startOverlay');
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        const magicKey = document.getElementById('magicKey');
+        const arVideo = document.getElementById('arVideo');
+        const slotBar = document.getElementById('slotBar');
+        const chestGrid = document.getElementById('chestGrid');
+        const countModal = document.getElementById('countModal');
+        const finaleModal = document.getElementById('finaleModal');
+        const finaleNumbersContainer = document.getElementById('finaleNumbersContainer');
+        const gemContainer = document.getElementById('gemContainer');
+        const giantNumberBox = document.getElementById('giantNumberBox');
+        const modalSunburst = document.getElementById('modalSunburst');
+        const modalSpeechLabel = document.getElementById('modalSpeechLabel');
+        const victoryOverlay = document.getElementById('victoryOverlay');
+        const flyContainer = document.getElementById('flyContainer');
+
+        function resizeCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function updatePointerPos(e) {
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            mouseX = x;
+            mouseY = y;
+            magicKey.style.left = `${x}px`;
+            magicKey.style.top = `${y}px`;
+
+            for (let i = 0; i < 2; i++) {
+                stardustParticles.push({
+                    x: x + (Math.random() - 0.5) * 18,
+                    y: y + (Math.random() - 0.5) * 18,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5 - 0.5,
+                    size: Math.random() * 6 + 3,
+                    color: Math.random() > 0.4 ? '#facc15' : '#38bdf8',
+                    alpha: 1,
+                    decay: Math.random() * 0.03 + 0.02,
+                    shape: Math.random() > 0.5 ? 'star' : 'circle'
+                });
+            }
+        }
+        window.addEventListener('mousemove', updatePointerPos);
+        window.addEventListener('touchmove', updatePointerPos);
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSynthTone(type, startFreq, endFreq, duration, volume = 0.2) {
+            if (!audioCtx || !isSoundOn) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+                if (endFreq !== startFreq) {
+                    osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
+                }
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.warn('Audio synth error:', e);
+            }
+        }
+
+        function playGemPopSound(index) {
+            const baseFreq = 480;
+            const pitchShift = baseFreq * Math.pow(1.08, index);
+            playSynthTone('sine', pitchShift, pitchShift * 1.25, 0.22, 0.35);
+        }
+
+        function playBurstSound() {
+            playSynthTone('triangle', 200, 750, 0.45, 0.5);
+            playSynthTone('sine', 900, 1450, 0.38, 0.3);
+        }
+
+        function playFlashPulseSound() {
+            playSynthTone('sine', 880, 1760, 0.3, 0.45);
+            playSynthTone('triangle', 1320, 2640, 0.25, 0.3);
+        }
+
+        function playSwoopSound() {
+            playSynthTone('sine', 300, 950, 0.5, 0.25);
+        }
+
+        function playSparklingArpeggioChime(stepIndex) {
+            if (!audioCtx || !isSoundOn) return;
+            try {
+                const now = audioCtx.currentTime;
+                const baseFrequencies = [
+                    523.25, 587.33, 659.25, 698.46, 783.99, 880.00,
+                    987.77, 1046.50, 1174.66, 1318.51, 1396.91, 1567.98
+                ];
+                const baseFreq = baseFrequencies[stepIndex % baseFrequencies.length];
+                const chordMultipliers = [1.0, 1.25, 1.4983, 2.0];
+                
+                chordMultipliers.forEach((mult, n) => {
+                    const noteTime = now + n * 0.05;
+                    const freq = baseFreq * mult;
+
+                    const oscSine = audioCtx.createOscillator();
+                    const gainSine = audioCtx.createGain();
+                    oscSine.type = 'sine';
+                    oscSine.frequency.setValueAtTime(freq, noteTime);
+
+                    gainSine.gain.setValueAtTime(0, noteTime);
+                    gainSine.gain.linearRampToValueAtTime(0.22, noteTime + 0.008);
+                    gainSine.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.38);
+
+                    oscSine.connect(gainSine);
+                    gainSine.connect(audioCtx.destination);
+                    oscSine.start(noteTime);
+                    oscSine.stop(noteTime + 0.40);
+                });
+            } catch (e) {
+                console.warn('Arpeggio synth error:', e);
+            }
+        }
+
+        function playVictoryFanfare() {
+            if (!audioCtx || !isSoundOn) return;
+            try {
+                const now = audioCtx.currentTime;
+                const staccatoNotes = [
+                    { time: 0.0,  duration: 0.12, freq: 392.00 },
+                    { time: 0.15, duration: 0.12, freq: 392.00 },
+                    { time: 0.30, duration: 0.12, freq: 392.00 },
+                ];
+
+                staccatoNotes.forEach(note => {
+                    const t = now + note.time;
+
+                    const oscSaw = audioCtx.createOscillator();
+                    const gainSaw = audioCtx.createGain();
+                    oscSaw.type = 'sawtooth';
+                    oscSaw.frequency.setValueAtTime(note.freq, t);
+
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(1400, t);
+                    filter.frequency.exponentialRampToValueAtTime(450, t + note.duration);
+
+                    gainSaw.gain.setValueAtTime(0, t);
+                    gainSaw.gain.linearRampToValueAtTime(0.3, t + 0.02);
+                    gainSaw.gain.exponentialRampToValueAtTime(0.001, t + note.duration);
+
+                    oscSaw.connect(filter);
+                    filter.connect(gainSaw);
+                    gainSaw.connect(audioCtx.destination);
+
+                    oscSaw.start(t);
+                    oscSaw.stop(t + note.duration + 0.02);
+                });
+
+                const chordTime = now + 0.48;
+                const chordDuration = 1.85;
+                const chordFreqs = [261.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+
+                chordFreqs.forEach(f => {
+                    const oscSaw = audioCtx.createOscillator();
+                    const oscTri = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    oscSaw.type = 'sawtooth';
+                    oscTri.type = 'triangle';
+                    oscSaw.frequency.setValueAtTime(f, chordTime);
+                    oscTri.frequency.setValueAtTime(f, chordTime);
+
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(2800, chordTime);
+                    filter.frequency.exponentialRampToValueAtTime(650, chordTime + chordDuration);
+
+                    gain.gain.setValueAtTime(0, chordTime);
+                    gain.gain.linearRampToValueAtTime(0.18, chordTime + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, chordTime + chordDuration);
+
+                    oscSaw.connect(filter);
+                    oscTri.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    oscSaw.start(chordTime);
+                    oscTri.start(chordTime);
+                    oscSaw.stop(chordTime + chordDuration);
+                    oscTri.stop(chordTime + chordDuration);
+                });
+
+            } catch (e) {
+                console.warn('Victory fanfare synth error:', e);
+            }
+        }
+
+        let bgmTimer = null;
+        function startBGM() {
+            if (bgmTimer) clearInterval(bgmTimer);
+            const bgmNotes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
+            let noteIdx = 0;
+            bgmTimer = setInterval(() => {
+                if (isSoundOn && audioCtx && audioCtx.state === 'running') {
+                    playSynthTone('triangle', bgmNotes[noteIdx], bgmNotes[noteIdx], 0.2, 0.04);
+                    noteIdx = (noteIdx + 1) % bgmNotes.length;
+                }
+            }, 420);
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.25;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function shuffleArray(arr) {
+            const array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            const shuffledValues = shuffleArray(CHEST_VALUES);
+            chestsState = shuffledValues.map((val, idx) => ({
+                id: idx,
+                value: val,
+                isOpened: false
+            }));
+            slotsState = Array(12).fill(null);
+            openedCount = 0;
+            renderSlots();
+            renderChests();
+        }
+
+        function renderSlots() {
+            slotBar.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const val = slotsState[i];
+                const slotEl = document.createElement('div');
+                slotEl.id = `slot-${i}`;
+                slotEl.className = `h-10 sm:h-13 flex items-center justify-center rounded-xl text-xl sm:text-2xl transition-all duration-300 ${
+                    val !== null 
+                    ? 'filled-slot top-slot-number' 
+                    : 'empty-slot'
+                }`;
+                slotEl.innerText = val !== null ? val : '';
+                slotBar.appendChild(slotEl);
+            }
+        }
+
+        function renderChests() {
+            chestGrid.innerHTML = '';
+            chestsState.forEach((chest, idx) => {
+                const chestEl = document.createElement('div');
+                chestEl.className = `chest-card relative flex flex-col items-center justify-center p-1 cursor-pointer transform transition duration-300 hover:scale-105 active:scale-95 ${chest.isOpened ? 'chest-open pointer-events-none' : ''}`;
+                chestEl.onclick = () => openChest(idx);
+
+                chestEl.innerHTML = `
+                    <div class="relative w-full max-w-[170px] flex flex-col items-center justify-center">
+                        <svg viewBox="0 0 220 175" class="w-full h-auto drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] overflow-visible">
+                          <defs>
+                            <linearGradient id="woodGrad-${idx}" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stop-color="#7a2d18"/>
+                              <stop offset="50%" stop-color="#5a1f11"/>
+                              <stop offset="100%" stop-color="#3f1309"/>
+                            </linearGradient>
+                            <linearGradient id="goldGrad-${idx}" x1="0" y1="0" x2="1" y2="1">
+                              <stop offset="0%" stop-color="#fef08a"/>
+                              <stop offset="35%" stop-color="#f59e0b"/>
+                              <stop offset="75%" stop-color="#d97706"/>
+                              <stop offset="100%" stop-color="#92400e"/>
+                            </linearGradient>
+                            <linearGradient id="goldPlate-${idx}" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stop-color="#fff08b"/>
+                              <stop offset="50%" stop-color="#fbbf24"/>
+                              <stop offset="100%" stop-color="#d97706"/>
+                            </linearGradient>
+                          </defs>
+
+                          <g transform="translate(18, 92)">
+                            <circle cx="0" cy="0" r="15" stroke="url(#goldGrad-${idx})" stroke-width="6" fill="none"/>
+                            <path d="M-7 -10 L7 -10 L5 -18 L-5 -18 Z" fill="url(#goldGrad-${idx})"/>
+                          </g>
+
+                          <path d="M25 70 L195 70 L190 152 C190 158 184 163 178 163 L42 163 C36 163 30 158 30 152 Z" fill="url(#woodGrad-${idx})" stroke="#220904" stroke-width="2.5"/>
+                          <path d="M25 70 L42 70 L42 148 L178 148 L178 70 L195 70 L190 153 C190 159 184 163 178 163 L42 163 C36 163 30 159 30 153 Z" fill="url(#goldGrad-${idx})"/>
+                          <rect x="42" y="70" width="136" height="78" fill="url(#woodGrad-${idx})"/>
+
+                          <circle cx="35" cy="155" r="3.8" fill="#fef08a" stroke="#92400e" stroke-width="1"/>
+                          <circle cx="185" cy="155" r="3.8" fill="#fef08a" stroke="#92400e" stroke-width="1"/>
+
+                          <g class="chest-svg-lid">
+                            <path d="M20 70 C20 12 200 12 200 70 Z" fill="url(#woodGrad-${idx})" stroke="#220904" stroke-width="2.5"/>
+                            <path d="M20 70 C20 12 200 12 200 70 L184 70 C184 26 36 26 36 70 Z" fill="url(#goldGrad-${idx})"/>
+                            <rect x="20" y="60" width="180" height="11" rx="2" fill="url(#goldGrad-${idx})"/>
+
+                            <g transform="translate(91, 34)">
+                              <rect x="0" y="0" width="38" height="46" rx="4" fill="url(#goldPlate-${idx})" stroke="#854d0e" stroke-width="2.2"/>
+                              <circle cx="19" cy="18" r="5.5" fill="#220904" stroke="#ffffff" stroke-width="1.8"/>
+                              <polygon points="15.5,18 22.5,18 24.5,35 13.5,35" fill="#220904" stroke="#ffffff" stroke-width="1.8"/>
+                            </g>
+                          </g>
+                        </svg>
+
+                        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black font-cartoon text-lg sm:text-2xl px-3 sm:px-4 py-0.5 rounded-xl border-2 border-amber-100 shadow-[0_4px_12px_rgba(0,0,0,0.85)] whitespace-nowrap z-10 pointer-events-none tracking-wider">
+                            宝箱 ${idx + 1}
+                        </div>
+                    </div>
+                `;
+                chestGrid.appendChild(chestEl);
+            });
+        }
+
+        function getDynamicGemConfig(total) {
+            if (total <= 3) {
+                return {
+                    svgSize: 'w-44 h-44 sm:w-56 sm:h-56 md:w-64 md:h-64',
+                    badgeSize: 'w-11 h-11 sm:w-14 sm:h-14 text-2xl sm:text-3xl -bottom-3',
+                    strokeWidth: '2.5'
+                };
+            } else if (total <= 6) {
+                return {
+                    svgSize: 'w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48',
+                    badgeSize: 'w-9 h-9 sm:w-11 sm:h-11 text-xl sm:text-2xl -bottom-2',
+                    strokeWidth: '2'
+                };
+            } else {
+                return {
+                    svgSize: 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36',
+                    badgeSize: 'w-7 h-7 sm:w-9 sm:h-9 text-base sm:text-xl -bottom-1',
+                    strokeWidth: '1.8'
+                };
+            }
+        }
+
+        window.interactiveTapGem = function(event, gemNum) {
+            event.stopPropagation();
+            const element = event.currentTarget;
+            element.classList.remove('gem-tap-active');
+            void element.offsetWidth;
+            element.classList.add('gem-tap-active');
+            
+            playGemPopSound(gemNum);
+            speakText(`${gemNum}`);
+        };
+
+        async function openChest(chestIndex) {
+            if (isModalActive || chestsState[chestIndex].isOpened) return;
+            isModalActive = true;
+            chestsState[chestIndex].isOpened = true;
+
+            const targetVal = chestsState[chestIndex].value;
+            renderChests();
+
+            countModal.classList.remove('modal-fade-out');
+            countModal.classList.add('modal-fade-in');
+            countModal.classList.remove('hidden');
+
+            gemContainer.innerHTML = '';
+            giantNumberBox.innerHTML = '';
+            modalSunburst.classList.add('hidden');
+            modalSpeechLabel.innerText = '正在全屏清点彩虹宝石...';
+
+            if (targetVal === 0) {
+                await new Promise(r => setTimeout(r, 400));
+                gemContainer.innerHTML = `
+                    <div class="text-3xl sm:text-5xl text-amber-300 font-cartoon py-8 animate-pulse font-extrabold text-center drop-shadow-lg">
+                        💨 空空如也，0 颗宝石！
+                    </div>
+                `;
+                await new Promise(r => setTimeout(r, 650));
+            } else {
+                const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#a855f7', '#ec4899'];
+                const gemCfg = getDynamicGemConfig(targetVal);
+
+                for (let i = 1; i <= targetVal; i++) {
+                    playGemPopSound(i);
+                    const gemColor = colors[(i - 1) % colors.length];
+                    const gemWrapper = document.createElement('div');
+                    gemWrapper.className = `gem-spring-in relative flex flex-col items-center justify-center cursor-pointer transition transform hover:scale-110 active:scale-90`;
+                    gemWrapper.onclick = (e) => interactiveTapGem(e, i);
+
+                    gemWrapper.innerHTML = `
+                        <div class="relative flex items-center justify-center filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.85)]">
+                            <svg class="${gemCfg.svgSize} transition-all" viewBox="0 0 24 24" fill="none">
+                                <defs>
+                                    <linearGradient id="gemGrad-${i}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ffffff"/>
+                                        <stop offset="30%" stop-color="${gemColor}"/>
+                                        <stop offset="100%" stop-color="#020617"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#gemGrad-${i})" stroke="#ffffff" stroke-width="${gemCfg.strokeWidth}" stroke-linejoin="round"/>
+                                <path d="M2 9H22M12 2L7 9L12 22L17 9L12 2Z" stroke="#ffffff" stroke-opacity="0.85" stroke-width="${gemCfg.strokeWidth}"/>
+                            </svg>
+                            <div class="absolute ${gemCfg.badgeSize} rounded-full bg-amber-400 text-slate-950 font-black border-2 border-white flex items-center justify-center shadow-2xl font-cartoon">
+                                ${i}
+                            </div>
+                        </div>
+                    `;
+                    gemContainer.appendChild(gemWrapper);
+                    await new Promise(r => setTimeout(r, 380));
+                }
+            }
+
+            modalSunburst.classList.remove('hidden');
+            playBurstSound();
+
+            giantNumberBox.innerHTML = `
+                <div id="giantNumberElem" class="number-burst-anim text-[8rem] sm:text-[12rem] md:text-[15rem] text-yellow-300 giant-comic-stroke leading-none">
+                    ${targetVal}
+                </div>
+            `;
+
+            const speechText = targetVal === 0 ? "没有宝石，数字 0！" : `${targetVal} 颗宝石，数字 ${targetVal}！`;
+            modalSpeechLabel.innerText = speechText;
+            speakText(speechText);
+
+            await new Promise(r => setTimeout(r, 800));
+
+            const giantElem = document.getElementById('giantNumberElem');
+            for (let flashCount = 1; flashCount <= 3; flashCount++) {
+                if (giantElem) {
+                    giantElem.classList.remove('pulse-flash-active');
+                    void giantElem.offsetWidth;
+                    giantElem.classList.add('pulse-flash-active');
+                }
+                playFlashPulseSound();
+                await new Promise(r => setTimeout(r, 550));
+            }
+
+            await new Promise(r => setTimeout(r, 900));
+
+            countModal.classList.remove('modal-fade-in');
+            countModal.classList.add('modal-fade-out');
+
+            await new Promise(r => setTimeout(r, 1300));
+
+            countModal.classList.add('hidden');
+            countModal.classList.remove('modal-fade-out');
+
+            await triggerParabolicFlight(chestIndex, targetVal);
+
+            openedCount++;
+            isModalActive = false;
+
+            if (openedCount === 12) {
+                await new Promise(r => setTimeout(r, 600));
+                triggerBlueFinaleSequence();
+            }
+        }
+
+        function triggerParabolicFlight(chestIdx, value) {
+            return new Promise((resolve) => {
+                const targetSlotIdx = slotsState.findIndex(s => s === null);
+                if (targetSlotIdx === -1) { resolve(); return; }
+
+                const chestCards = document.querySelectorAll('.chest-card');
+                const startRect = chestCards[chestIdx] ? chestCards[chestIdx].getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/2 };
+                const endSlot = document.getElementById(`slot-${targetSlotIdx}`);
+                const endRect = endSlot ? endSlot.getBoundingClientRect() : { left: 0, top: 0 };
+
+                const startX = startRect.left + startRect.width / 2;
+                const startY = startRect.top + startRect.height / 2;
+                const endX = endRect.left + endRect.width / 2;
+                const endY = endRect.top + endRect.height / 2;
+
+                const flyingEl = document.createElement('div');
+                flyingEl.className = 'fixed text-3xl sm:text-4xl text-slate-950 bg-gradient-to-b from-yellow-300 to-amber-500 border-2 border-white rounded-xl w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shadow-2xl z-50 transform -translate-x-1/2 -translate-y-1/2 top-slot-number';
+                flyingEl.innerText = value;
+                flyContainer.appendChild(flyingEl);
+
+                playSwoopSound();
+
+                const startTime = performance.now();
+                const duration = 750;
+                const controlX = (startX + endX) / 2;
+                const controlY = Math.min(startY, endY) - 180;
+
+                function animateFlight(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const t = Math.min(elapsed / duration, 1);
+
+                    const currX = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * endX;
+                    const currY = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * controlY + t * t * endY;
+
+                    const scale = 1.3 - t * 0.3;
+                    flyingEl.style.left = `${currX}px`;
+                    flyingEl.style.top = `${currY}px`;
+                    flyingEl.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
+                    if (t < 1) {
+                        requestAnimationFrame(animateFlight);
+                    } else {
+                        flyingEl.remove();
+                        slotsState[targetSlotIdx] = value;
+                        renderSlots();
+                        const landedSlot = document.getElementById(`slot-${targetSlotIdx}`);
+                        if (landedSlot) landedSlot.classList.add('slot-highlight');
+                        resolve();
+                    }
+                }
+                requestAnimationFrame(animateFlight);
+            });
+        }
+
+        // 通关蓝色背景展示 0 到 10 摇动朗读函数
+        async function triggerBlueFinaleSequence() {
+            // 渲染数字 0 到 10
+            finaleNumbersContainer.innerHTML = '';
+            const nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            
+            nums.forEach(num => {
+                const numCard = document.createElement('div');
+                numCard.id = `finale-num-${num}`;
+                numCard.className = `w-14 h-18 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-blue-950/80 border-4 border-sky-300 rounded-2xl flex items-center justify-center text-3xl sm:text-5xl md:text-6xl font-black text-white shadow-2xl transition-all duration-300 font-cartoon`;
+                numCard.innerText = num;
+                finaleNumbersContainer.appendChild(numCard);
+            });
+
+            // 显示蓝色背景全屏
+            finaleModal.classList.remove('hidden');
+
+            // 播放语音“太棒了！”
+            speakText("太棒了！");
+
+            await new Promise(r => setTimeout(r, 1200));
+
+            // 一个一个读一读，读每一个数字时，数字摇动 (shake-active)
+            for (let i = 0; i <= 10; i++) {
+                const numCard = document.getElementById(`finale-num-${i}`);
+                
+                if (numCard) {
+                    numCard.classList.add('shake-active');
+                }
+
+                playSparklingArpeggioChime(i);
+                speakText(`${i}`);
+
+                await new Promise(r => setTimeout(r, 900));
+
+                if (numCard) {
+                    numCard.classList.remove('shake-active');
+                    // 读完后保持闪亮金色卡片外观
+                    numCard.className = `w-14 h-18 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-gradient-to-b from-yellow-300 to-amber-500 border-4 border-white rounded-2xl flex items-center justify-center text-3xl sm:text-5xl md:text-6xl font-black text-slate-950 shadow-xl transition-all duration-300 font-cartoon`;
+                }
+            }
+
+            await new Promise(r => setTimeout(r, 800));
+
+            playVictoryFanfare();
+            triggerFireworks();
+
+            await new Promise(r => setTimeout(r, 1000));
+            finaleModal.classList.add('hidden');
+            victoryOverlay.classList.remove('hidden');
+        }
+
+        function triggerFireworks() {
+            for (let i = 0; i < 180; i++) {
+                fireworkParticles.push({
+                    x: window.innerWidth / 2 + (Math.random() - 0.5) * 400,
+                    y: window.innerHeight / 2 + (Math.random() - 0.5) * 300,
+                    vx: (Math.random() - 0.5) * 18,
+                    vy: (Math.random() - 0.5) * 18 - 4,
+                    size: Math.random() * 8 + 3,
+                    color: `hsl(${Math.random() * 360}, 100%, 65%)`,
+                    alpha: 1,
+                    decay: Math.random() * 0.02 + 0.01
+                });
+            }
+        }
+
+        async function enableARCamera() {
+            try {
+                arStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+                arVideo.srcObject = arStream;
+                arVideo.classList.remove('hidden');
+                isAROn = true;
+                document.getElementById('arStatusIcon').innerText = '📹';
+                document.getElementById('arStatusText').innerText = '关闭 AR';
+            } catch (err) {
+                console.warn("AR Camera unavailable:", err);
+                alert("无法访问摄像头，已自动切换为动态星空画卷！");
+                disableARCamera();
+            }
+        }
+
+        function disableARCamera() {
+            if (arStream) {
+                arStream.getTracks().forEach(track => track.stop());
+                arStream = null;
+            }
+            arVideo.classList.add('hidden');
+            isAROn = false;
+            document.getElementById('arStatusIcon').innerText = '📷';
+            document.getElementById('arStatusText').innerText = '开启 AR 镜头';
+        }
+
+        document.getElementById('btnToggleAR').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (isAROn) {
+                disableARCamera();
+            } else {
+                enableARCamera();
+            }
+        });
+
+        document.getElementById('btnToggleSound').addEventListener('click', (e) => {
+            e.stopPropagation();
+            isSoundOn = !isSoundOn;
+            document.getElementById('soundIcon').innerText = isSoundOn ? '🔊' : '🔇';
+        });
+
+        function renderCanvasLoop() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            if (!isAROn) {
+                bgCtx.fillStyle = 'rgba(11, 19, 43, 0.88)';
+                bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+                const time = Date.now() * 0.001;
+                for (let i = 0; i < 48; i++) {
+                    const sx = (Math.sin(i * 99 + time * 0.2) * 0.5 + 0.5) * bgCanvas.width;
+                    const sy = (Math.cos(i * 33 + time * 0.3) * 0.5 + 0.5) * bgCanvas.height;
+                    const radius = (Math.sin(i + time * 2) * 0.5 + 0.5) * 2.5 + 1;
+                    bgCtx.fillStyle = 'rgba(253, 224, 71, 0.65)';
+                    bgCtx.beginPath();
+                    bgCtx.arc(sx, sy, radius, 0, Math.PI * 2);
+                    bgCtx.fill();
+                }
+            }
+
+            for (let i = stardustParticles.length - 1; i >= 0; i--) {
+                const p = stardustParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    stardustParticles.splice(i, 1);
+                    continue;
+                }
+
+                bgCtx.save();
+                bgCtx.globalAlpha = p.alpha;
+                bgCtx.fillStyle = p.color;
+                bgCtx.beginPath();
+                if (p.shape === 'star') {
+                    bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                } else {
+                    bgCtx.rect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                }
+                bgCtx.fill();
+                bgCtx.restore();
+            }
+
+            for (let i = fireworkParticles.length - 1; i >= 0; i--) {
+                const p = fireworkParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.16;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    fireworkParticles.splice(i, 1);
+                    continue;
+                }
+
+                bgCtx.save();
+                bgCtx.globalAlpha = p.alpha;
+                bgCtx.fillStyle = p.color;
+                bgCtx.beginPath();
+                bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                bgCtx.fill();
+                bgCtx.restore();
+            }
+
+            requestAnimationFrame(renderCanvasLoop);
+        }
+        requestAnimationFrame(renderCanvasLoop);
+
+        // 点击开启寻宝
+        startOverlay.addEventListener('click', () => {
+            initAudio();
+            startBGM();
+            speakText("寻宝游戏");
+            startOverlay.classList.add('hidden');
+            initGame();
+        });
+
+        document.getElementById('btnRestart').addEventListener('click', (e) => {
+            e.stopPropagation();
+            victoryOverlay.classList.add('hidden');
+            initGame();
+            speakText("寻宝游戏");
+        });
+    </script>
+</body>
+</html>
